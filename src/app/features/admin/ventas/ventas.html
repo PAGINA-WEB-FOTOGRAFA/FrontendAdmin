@@ -1,0 +1,56 @@
+<h1 class="page-title">Ventas</h1>
+
+<div class="toolbar filters">
+  <label class="filter-label">
+    Estado:
+    <select class="input filter-select" [(ngModel)]="filtro">
+      <option value="todos">Todos</option>
+      @for (e of estados; track e) {
+        <option [value]="e">{{ e }}</option>
+      }
+    </select>
+  </label>
+</div>
+
+@if (loading) {
+  <p class="muted">Cargando…</p>
+}
+
+@if (!loading && visibles.length === 0) {
+  <p class="muted">No hay ventas.</p>
+}
+
+@if (visibles.length > 0) {
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nº</th>
+          <th>Cliente</th>
+          <th>WhatsApp</th>
+          <th>Email</th>
+          <th>Fotos</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (v of visibles; track v.id) {
+          <tr>
+            <td>#{{ v.id }}</td>
+            <td>{{ cliente(v) }}</td>
+            <td>{{ v.whatsapp }}</td>
+            <td>{{ v.email }}</td>
+            <td>{{ v.cantidad_fotos }}</td>
+            <td>$ {{ v.total | number }}</td>
+            <td>
+              <span class="badge" [ngClass]="v.estado">{{ v.estado }}</span>
+            </td>
+            <td>{{ v.fecha }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,152 @@
+<h1 class="page-title">Eventos</h1>
+
+<div class="toolbar">
+  <button class="btn btn-primary" type="button" (click)="abrirNuevo()">
+    Nuevo evento
+  </button>
+</div>
+
+@if (loading) {
+  <p class="muted">Cargando…</p>
+}
+
+@if (!loading && eventos.length === 0) {
+  <p class="muted">Todavía no hay eventos.</p>
+}
+
+@if (eventos.length > 0) {
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Fecha</th>
+          <th>Lugar</th>
+          <th>Precio por foto</th>
+          <th>Estado</th>
+          <th>Fotos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of eventos; track e.id) {
+          <tr>
+            <td>{{ e.nombre }}</td>
+            <td>{{ e.fecha_evento }}</td>
+            <td>{{ e.lugar || '—' }}</td>
+            <td>$ {{ e.precio_foto | number }}</td>
+            <td>
+              <span [class]="e.activo === 1 ? 'badge activo' : 'badge inactivo'">
+                {{ e.activo === 1 ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td>{{ e.fotos?.length ?? '—' }}</td>
+            <td class="actions">
+              <button class="btn btn-sm btn-light" type="button" (click)="abrirEdicion(e)">
+                Editar
+              </button>
+              <button class="btn btn-sm btn-danger" type="button" (click)="eliminar(e)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (showForm) {
+  <div class="overlay" (click)="cerrarForm()">
+    <form class="panel panel-wide" (click)="$event.stopPropagation()" [formGroup]="form" (ngSubmit)="guardar()">
+      <h2 class="panel-title">{{ editandoId === null ? 'Nuevo evento' : 'Editar evento' }}</h2>
+
+      @if (error) {
+        <div class="alert error">{{ error }}</div>
+      }
+
+      <label class="field">
+        <span class="field-label">Nombre</span>
+        <input type="text" class="input" formControlName="nombre" />
+      </label>
+
+      <div class="grid-2">
+        <label class="field">
+          <span class="field-label">Fecha del evento</span>
+          <input type="date" class="input" formControlName="fecha_evento" />
+        </label>
+        <label class="field">
+          <span class="field-label">Precio por foto</span>
+          <input type="number" step="0.01" min="0" class="input" formControlName="precio_foto" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">Lugar</span>
+        <input type="text" class="input" formControlName="lugar" />
+      </label>
+
+      <label class="field check-field">
+        <input type="checkbox" formControlName="activo" />
+        <span>Evento activo (visible para clientes)</span>
+      </label>
+
+      @if (editandoId !== null && fotosExistentes.length > 0) {
+        <div class="field">
+          <span class="field-label">Fotos existentes</span>
+          <div class="foto-grid">
+            @for (foto of fotosExistentes; track foto.id) {
+              <div class="foto-item" [class.eliminada]="foto.eliminada">
+                <img [src]="foto.url" alt="Foto existente" class="foto-thumb" />
+                <span class="foto-nombre">{{ nombreFoto(foto.ruta) }}</span>
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  [class.btn-danger]="!foto.eliminada"
+                  [class.btn-light]="foto.eliminada"
+                  (click)="marcarParaEliminar(foto)"
+                >
+                  {{ foto.eliminada ? 'Restaurar' : 'Quitar' }}
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <label class="field">
+        <span class="field-label">Agregar fotos</span>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          class="input file-input"
+          (change)="onFilesSelected($event)"
+        />
+      </label>
+
+      @if (fotosNuevas.length === 0) {
+        <p class="muted">No se seleccionaron fotos nuevas.</p>
+      } @else {
+        <div class="foto-grid">
+          @for (foto of fotosNuevas; track $index) {
+            <div class="foto-item">
+              <img [src]="foto.url" alt="Foto nueva" class="foto-thumb" />
+              <span class="foto-nombre">{{ foto.file.name }}</span>
+              <button type="button" class="btn btn-sm btn-danger" (click)="quitarNueva($index)">
+                Quitar
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="panel-actions">
+        <button type="button" class="btn btn-light" (click)="cerrarForm()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          {{ loading ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

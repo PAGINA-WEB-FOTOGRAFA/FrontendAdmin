@@ -1,0 +1,32 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">Panel Admin</div>
+    <nav class="nav">
+      @for (item of nav; track item.path) {
+        <a
+          class="nav-link"
+          routerLink="{{ item.path }}"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/admin/dashboard' }"
+        >
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-user">
+        <span class="topbar-name">{{ user?.nombre ?? 'Admin' }}</span>
+        <button class="btn btn-ghost" type="button" (click)="logout()">
+          Salir
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+.filters {
+  justify-content: flex-start;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.filter-select {
+  width: auto;
+  min-width: 160px;
+}

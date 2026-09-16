@@ -1,0 +1,16 @@
+<h1 class="page-title">Dashboard</h1>
+
+<div class="cards">
+  <a class="card" routerLink="/admin/ventas">
+    <span class="card-value">{{ totalVentas }}</span>
+    <span class="card-label">Ventas</span>
+  </a>
+  <a class="card" routerLink="/admin/ventas">
+    <span class="card-value">$ {{ montoVentas | number }}</span>
+    <span class="card-label">Monto vendido</span>
+  </a>
+  <a class="card" routerLink="/admin/eventos">
+    <span class="card-value">{{ totalEventos }}</span>
+    <span class="card-label">Eventos</span>
+  </a>
+</div>
