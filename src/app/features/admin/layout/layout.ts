@@ -15,6 +15,8 @@ export class AdminLayout {
 
   user: AuthUser | null = this.auth.getUser();
 
+  menuAbierto = false;
+
   nav: { path: string; label: string }[] = [
     { path: '/admin/dashboard', label: 'Dashboard' },
     { path: '/admin/ventas', label: 'Ventas' },
@@ -24,5 +26,13 @@ export class AdminLayout {
   logout(): void {
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  toggleMenu(): void {
+    this.menuAbierto = !this.menuAbierto;
+  }
+
+  cerrarMenu(): void {
+    this.menuAbierto = false;
   }
 }

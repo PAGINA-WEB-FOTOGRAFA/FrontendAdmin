@@ -8,6 +8,7 @@
           routerLink="{{ item.path }}"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: item.path === '/admin/dashboard' }"
+          (click)="cerrarMenu()"
         >
           {{ item.label }}
         </a>
@@ -15,8 +16,20 @@
     </nav>
   </aside>
 
+  @if (menuAbierto) {
+    <div class="backdrop" (click)="cerrarMenu()"></div>
+  }
+
   <div class="main">
     <header class="topbar">
+      <button
+        class="btn btn-ghost menu-toggle"
+        type="button"
+        aria-label="Abrir menú"
+        (click)="toggleMenu()"
+      >
+        ☰
+      </button>
       <div class="topbar-user">
         <span class="topbar-name">{{ user?.nombre ?? 'Admin' }}</span>
         <button class="btn btn-ghost" type="button" (click)="logout()">
