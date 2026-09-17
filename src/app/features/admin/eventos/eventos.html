@@ -42,6 +42,14 @@
             </td>
             <td>{{ e.fotos?.length ?? '—' }}</td>
             <td class="actions">
+              <button
+                class="btn btn-sm btn-light"
+                type="button"
+                [disabled]="togglingId === e.id"
+                (click)="toggleActivo(e)"
+              >
+                {{ e.activo === 1 ? 'Ocultar' : 'Mostrar' }}
+              </button>
               <button class="btn btn-sm btn-light" type="button" (click)="abrirEdicion(e)">
                 Editar
               </button>
@@ -85,6 +93,28 @@
         <span class="field-label">Lugar</span>
         <input type="text" class="input" formControlName="lugar" />
       </label>
+
+      <label class="field">
+        <span class="field-label">Portada (opcional)</span>
+        <input
+          type="file"
+          accept="image/*"
+          class="input file-input"
+          (change)="onPortadaSelected($event)"
+        />
+      </label>
+
+      @if (portadaPreviewUrl()) {
+        <div class="field">
+          <span class="field-label">Vista previa de la portada</span>
+          <div class="foto-item">
+            <img [src]="portadaPreviewUrl() || ''" alt="Portada del evento" class="foto-thumb" />
+            <button type="button" class="btn btn-sm btn-danger" (click)="quitarPortada()">
+              Quitar
+            </button>
+          </div>
+        </div>
+      }
 
       <label class="field check-field">
         <input type="checkbox" formControlName="activo" />

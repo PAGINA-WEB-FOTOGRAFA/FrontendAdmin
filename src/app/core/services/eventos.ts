@@ -16,6 +16,7 @@ export interface Evento {
   fecha_evento: string;
   precio_foto: number;
   activo: number;
+  portada?: string | null;
   fecha_creacion?: string;
   fotos?: Foto[];
 }
@@ -42,13 +43,19 @@ export class EventosService {
     return this.api.get(`get_eventos.php?id=${id}`).pipe(map((res) => res?.evento));
   }
 
-  crear(data: EventoData, fotos: File[]): Observable<Evento> {
-    const fd = this.formData(data, fotos);
+  crear(data: EventoData, fotos: File[], portada?: File | null): Observable<Evento> {
+    const fd = this.formData(data, fotos, portada);
     return this.api.postForm('crear_evento.php', fd).pipe(map((res) => res?.evento ?? res));
   }
 
-  actualizar(id: number, data: EventoData, fotos: File[], fotosEliminar: number[]): Observable<any> {
-    const fd = this.formData(data, fotos);
+  actualizar(
+    id: number,
+    data: EventoData,
+    fotos: File[],
+    fotosEliminar: number[],
+    portada?: File | null
+  ): Observable<any> {
+    const fd = this.formData(data, fotos, portada);
     fd.append('id', String(id));
     fotosEliminar.forEach((fid) => fd.append('fotos_eliminar[]', String(fid)));
     return this.api.postForm('editar_evento.php', fd);
@@ -58,7 +65,7 @@ export class EventosService {
     return this.api.post('eliminar_evento.php', { id });
   }
 
-  private formData(data: EventoData, fotos: File[]): FormData {
+  private formData(data: EventoData, fotos: File[], portada?: File | null): FormData {
     const fd = new FormData();
     fd.append('nombre', data.nombre);
     fd.append('lugar', data.lugar);
@@ -66,6 +73,9 @@ export class EventosService {
     fd.append('precio_foto', String(data.precio_foto));
     fd.append('activo', String(data.activo));
     fotos.forEach((foto) => fd.append('fotos[]', foto, foto.name));
+    if (portada) {
+      fd.append('portada', portada, portada.name);
+    }
     return fd;
   }
 }

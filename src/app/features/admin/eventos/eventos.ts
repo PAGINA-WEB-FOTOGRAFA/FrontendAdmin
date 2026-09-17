@@ -4,7 +4,7 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { finalize } from 'rxjs';
 
 import { API_URL } from '../../../core/services/api';
-import { Evento, EventosService } from '../../../core/services/eventos';
+import { Evento, EventoData, EventosService } from '../../../core/services/eventos';
 import { DialogService } from '../../../core/services/dialog';
 
 interface FotoEditable {
@@ -37,6 +37,10 @@ export class Eventos implements OnInit {
   showForm = false;
   fotosExistentes: FotoEditable[] = [];
   fotosNuevas: FotoNueva[] = [];
+  portadaFile: File | null = null;
+  portadaNuevaUrl: string | null = null;
+  portadaActual: string | null = null;
+  togglingId: number | null = null;
 
   form = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
@@ -76,6 +80,7 @@ export class Eventos implements OnInit {
     this.editandoId = null;
     this.fotosExistentes = [];
     this.limpiarNuevas();
+    this.limpiarPortada();
     this.form.reset({ nombre: '', lugar: '', fecha_evento: '', precio_foto: 0, activo: true });
     this.showForm = true;
   }
@@ -84,6 +89,8 @@ export class Eventos implements OnInit {
     this.editandoId = e.id;
     this.fotosExistentes = [];
     this.limpiarNuevas();
+    this.limpiarPortada();
+    this.portadaActual = e.portada ?? null;
     this.form.setValue({
       nombre: e.nombre,
       lugar: e.lugar ?? '',
@@ -112,6 +119,7 @@ export class Eventos implements OnInit {
     this.error = '';
     this.fotosExistentes = [];
     this.limpiarNuevas();
+    this.limpiarPortada();
   }
 
   guardar(): void {
@@ -127,12 +135,13 @@ export class Eventos implements OnInit {
     const archivos = this.fotosNuevas.map((f) => f.file);
     const request =
       this.editandoId === null
-        ? this.service.crear(data, archivos)
+        ? this.service.crear(data, archivos, this.portadaFile)
         : this.service.actualizar(
             this.editandoId,
             data,
             archivos,
-            this.fotosExistentes.filter((f) => f.eliminada).map((f) => f.id)
+            this.fotosExistentes.filter((f) => f.eliminada).map((f) => f.id),
+            this.portadaFile
           );
 
     request.pipe(finalize(() => (this.loading = false))).subscribe({
@@ -154,6 +163,31 @@ export class Eventos implements OnInit {
     });
   }
 
+  toggleActivo(e: Evento): void {
+    if (this.togglingId !== null) return;
+    this.togglingId = e.id;
+
+    const data: EventoData = {
+      nombre: e.nombre,
+      lugar: e.lugar ?? '',
+      fecha_evento: e.fecha_evento,
+      precio_foto: Number(e.precio_foto),
+      activo: e.activo === 1 ? 0 : 1,
+    };
+
+    this.service
+      .actualizar(e.id, data, [], [], null)
+      .pipe(
+        finalize(() => {
+          this.togglingId = null;
+        })
+      )
+      .subscribe({
+        next: () => this.cargar(),
+        error: () => this.dialog.alert('No se pudo cambiar el estado del evento.'),
+      });
+  }
+
   onFilesSelected(event: Event): void {
     const files = (event.target as HTMLInputElement).files;
     if (files) {
@@ -173,6 +207,46 @@ export class Eventos implements OnInit {
 
   marcarParaEliminar(foto: FotoEditable): void {
     foto.eliminada = !foto.eliminada;
+  }
+
+  onPortadaSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (this.portadaNuevaUrl) {
+      URL.revokeObjectURL(this.portadaNuevaUrl);
+    }
+    this.portadaFile = file;
+    this.portadaNuevaUrl = URL.createObjectURL(file);
+  }
+
+  quitarPortada(): void {
+    if (this.portadaNuevaUrl) {
+      URL.revokeObjectURL(this.portadaNuevaUrl);
+    }
+    this.portadaFile = null;
+    this.portadaNuevaUrl = null;
+  }
+
+  portadaPreviewUrl(): string | null {
+    if (this.portadaNuevaUrl) {
+      return this.portadaNuevaUrl;
+    }
+    return this.portadaActual ? this.fotoUrl(this.portadaActual) : null;
+  }
+
+  private limpiarPortada(): void {
+    if (this.portadaNuevaUrl) {
+      URL.revokeObjectURL(this.portadaNuevaUrl);
+    }
+    this.portadaFile = null;
+    this.portadaNuevaUrl = null;
+    this.portadaActual = null;
   }
 
   private limpiarNuevas(): void {

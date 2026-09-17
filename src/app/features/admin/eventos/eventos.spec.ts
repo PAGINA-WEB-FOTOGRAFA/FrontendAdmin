@@ -64,7 +64,8 @@ describe('Eventos', () => {
 
     expect(crearSpy).toHaveBeenCalledWith(
       { nombre: 'Nuevo', lugar: 'CABA', fecha_evento: '2026-06-01', precio_foto: 10, activo: 1 },
-      []
+      [],
+      null
     );
     expect(component.showForm).toBeFalse();
   });
